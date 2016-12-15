@@ -134,12 +134,27 @@ exports.clean = function(path) {
 
 /**
  * Creating the configuration of converting SCSS to inline css.
- * @param {RegExp} excludePaths -The regular expression of exclude path.
+ * @param {Array} path -The regular expression of exclude path.
+ * @param {String} filter -The flag to control it's "exclude" or "include" the path.
  * @param {Array} extraResources -The array of the paths of the external resource you want to include.
  * @param {Boolean} sourceMap -The controller of enable source map.
  * @returns {{module: {loaders: [*,*]}, sassLoader: {includePaths: *}}}
  */
-exports.inlineSCSStoCSS = function(excludePaths, extraResources, sourceMap){
+exports.inlineSCSStoCSS = function(path, filter="exclude", extraResources=[], sourceMap=true){
+  let scssLoader;
+  if (filter === "exclude") {
+    scssLoader = {
+      test: /\.scss$/,
+      loaders: ["style-loader", "css-loader?sourceMap!postcss-loader!sass-loader"],
+      exclude: path
+    };
+  } else {
+    scssLoader = {
+      test: /\.scss$/,
+      loaders: ["style-loader", "css-loader?sourceMap!postcss-loader!sass-loader"],
+      include: path
+    };
+  }
   return {
     module: {
       loaders: [
@@ -148,11 +163,7 @@ exports.inlineSCSStoCSS = function(excludePaths, extraResources, sourceMap){
           test: /\.css$/,
           loaders: ["style-loader", "css-loader?sourceMap!postcss-loader"]
         },
-        {
-          test: /\.scss$/,
-          loaders: ["style-loader", "css-loader?sourceMap!postcss-loader!sass-loader"],
-          exclude: excludePaths
-        }
+        scssLoader
       ]
     },
     sassLoader: {
@@ -164,12 +175,27 @@ exports.inlineSCSStoCSS = function(excludePaths, extraResources, sourceMap){
 
 /**
  * Creating the configuration of converting SCSS to extract css.
- * @param {RegExp} excludePaths -The regular expression of exclude path.
+ * @param {Array} path -The regular expression of exclude path.
+ * @param {String} filter -The flag to control it's "exclude" or "include" the path.
  * @param {Array} extraResources -The array of the paths of the external resource you want to include.
  * @param {Boolean} sourceMap -The controller of enable source map.
  * @returns {{module: {loaders: [*,*]}, sassLoader: {includePaths: *}, plugins: [*]}}
  */
-exports.extractSCSStoCSS = function(excludePaths, extraResources, sourceMap) {
+exports.extractSCSStoCSS = function(path, filter="exclude", extraResources=[], sourceMap=true) {
+  let scssLoader;
+  if (filter === "exclude") {
+    scssLoader = {
+      test: /\.scss$/,
+      loader: ExtractTextPlugin.extract("style-loader", "css-loader?sourceMap!postcss-loader!sass-loader"),
+      exclude: path
+    }
+  } else {
+    scssLoader = {
+      test: /\.scss$/,
+      loader: ExtractTextPlugin.extract("style-loader", "css-loader?sourceMap!postcss-loader!sass-loader"),
+      include: path
+    }
+  }
   return {
     module: {
       loaders: [
@@ -178,11 +204,7 @@ exports.extractSCSStoCSS = function(excludePaths, extraResources, sourceMap) {
           test: /\.css$/,
           loader: ExtractTextPlugin.extract("style-loader", "css-loader!postcss-loader")
         },
-        {
-          test: /\.scss$/,
-          loader: ExtractTextPlugin.extract("style-loader", "css-loader?sourceMap!postcss-loader!sass-loader"),
-          exclude: excludePaths
-        }
+        scssLoader
       ]
     },
     sassLoader: {
@@ -199,20 +221,37 @@ exports.extractSCSStoCSS = function(excludePaths, extraResources, sourceMap) {
 
 /**
  * This is a under-testing function for creating the configuration of CSS module.
- * @param {RegExp} excludePaths -The regular expression of exclude path.
+ * @param {Array} path -The regular expression of exclude path.
+ * @param {String} filter -The flag to control it's "exclude" or "include" the path.
  * @param {Array} extraResources -The array of the paths of the external resource you want to include.
  * @param {Boolean} sourceMap -The controller of enable source map.
  * @param {Array} sassResource -The SASS main resource. Normally, it's the main scss file in your project.
- * @param {Boolean} inline -The controller of enable inline CSS.
+ * @param {Boolean} inlineFlag -The controller of enable inline CSS.
  * @returns {{module: {loaders: [*,*]}, sassLoader: {sourceMap: *, includePaths: *}, sassResources: *, plugins: [*]}}
  * @constructor
  */
-exports.SCSStoCSSModule = function(excludePaths, extraResources, sourceMap, sassResource, inline) {
+exports.SCSStoCSSModule = function(path, filter="exclude", extraResources=[], sourceMap=true, sassResource=[], inlineFlag=true) {
   // Sass loader setting for css module:
   const extractCSS = new ExtractTextPlugin('[name].[chunkhash].css');
 
   const inline = 'style!css?sourceMap&modules&importLoaders=2&localIdentName=[name]__[local]___[hash:base64:5]!postcss!sass!sass-resources';
   const extract = extractCSS.extract("style", "css?sourceMap&modules&importLoaders=2&localIdentName=[name]__[local]___[hash:base64:5]!postcss!sass!sass-resources");
+
+  let scssLoader;
+
+  if (filter === "exclude") {
+    scssLoader = {
+      test: /\.scss$/,
+      loader: inlineFlag ? inline : extract,
+      exclude: path
+    };
+  } else {
+    scssLoader = {
+      test: /\.scss$/,
+      loader: inlineFlag ? inline : extract,
+      include: path
+    };
+  }
 
   return {
     module: {
@@ -222,11 +261,7 @@ exports.SCSStoCSSModule = function(excludePaths, extraResources, sourceMap, sass
           test: /\.css$/,
           loader: extractCSS.extract("style-loader", "css-loader!postcss-loader")
         },
-        {
-          test: /\.scss$/,
-          loader: inline ? inline : extract,
-          exclude: excludePaths
-        }
+        scssLoader
       ]
     },
     sassLoader: {
@@ -241,20 +276,32 @@ exports.SCSStoCSSModule = function(excludePaths, extraResources, sourceMap, sass
   };
 };
 
+
 /**
  * Creating a ES linting configuration for webpack.
- * @param {RegExp} excludePath -The excluding path of the eslint.
+ * @param {Array} path -The array of the path should be included or excluded.
+ * @param {String} filter -The flag to control it's "exclude" or "include" the path.
  * @returns {{module: {preLoaders: [*]}}}
  */
-exports.eslint = function(excludePath) {
+exports.eslint = function(path, filter="exclude") {
+  let loader;
+  if (filter === "exclude") {
+    loader = {
+      test: /\.jsx?$/,
+      loaders: ['eslint'],
+      exclude: path
+    }
+  } else {
+    loader = {
+      test: /\.jsx?$/,
+      loaders: ['eslint'],
+      include: path
+    }
+  }
   return {
     module: {
       preLoaders: [
-        {
-          test: /\.jsx?$/,
-          loaders: ['eslint'],
-          include: excludePath
-        }
+        loader
       ]
     }
   }
@@ -268,8 +315,7 @@ exports.sassLint = function(){
   return {
     plugins: [
       new StyleLintPlugin({
-        configFile: '.stylelintrc',
-        files: ['**/*.s?(a|c)ss'],
+        files: ['/scss/**/*.s?(a|c)ss'],
         syntax: 'scss',
         failOnError: false,
       })

@@ -1,11 +1,9 @@
 
-# [Faculty Story](https://teaching-resources.griffith.edu.au/faculty-story/)
 
 *Content to come.*
 
 ## Contributors
 
-* [Daniel Tedman](http://danieltedman.com)
 * [Jeff Teng](mailto:j.teng@griffith.edu.au)
 
 ## Dependencies
@@ -37,46 +35,24 @@ npm run build
 
 Testing provided by [Karma JS](https://karma-runner.github.io).
 
-```bash
-npm run test
+
+## Setting up server on the Ubuntu 16.04 server
+
+After uploading the project to your hosting server. Run the command with ssh to your server.
+
+```powershell
+
+#Testing before setup
+nohup /multi-function-site/bin/start.sh &
+
+#Run setup command
+/multi-function-site/bin/setup.sh
+
+#Start the server 
+sudo systemctl start multi-function-site.service
+
+#Stop the server
+sudo systemctl stop multi-function-site.service
+
 ```
 
-## Deployment
-
-*Deployment uses Subversion to migrate changes. All application dependencies need to be committed to to this Subversion repository because we do not have the ability to install them from each environment. Any compile processes like Webpack need to be run and their output files also committed to Subversion.*
-
-1\. Create a release preparation [PowerShell](https://msdn.microsoft.com/en-us/powershell/mt173057.aspx) script:
-
-```PowerShell
-#
-# Copies files needed for Develop to release changes via Subversion repository.
-#
-# See https://technet.microsoft.com/en-us/library/cc733145.aspx for robocopy docs.
-#
-
-$from = "D:\Workspace\faculty-story-react-git"
-$to = "D:\Workspace\faculty-story-svn"
-
-robocopy $from $to `
-    /mir `
-    /xd ".idea" `
-    /xd ".svn" `
-    /xd "node_modules" `
-    /xd ".git"
-
-# Now run commands from within the subversion directory.
-cd $to
-
-# Run production pre release commands.
-npm install
-npm prune
-
-# Compile static assets and prepare dist.
-npm run build
-```
-
-2\. Execute this script with PowerShell. Opening the script in the PowerShell ISE program is the easiest way to run it.
-
-3\. Commit changes to Subversion. You will need to add any new files and delete any which have been removed.
-
-4\. Use [Migration Manager](https://dsl1.secure.griffith.edu.au/subversion/list-migs.php) to migrate changes into target environment.

@@ -57,7 +57,7 @@ const common = {
   },
   output: {
     path: path.join(__dirname, 'dist'),
-    publicPath: '/',
+    publicPath: '/test/',
     filename: '[name].[hash].js',
     chunkFilename: '[name].[chunkhash:8].js'
   },
@@ -149,20 +149,27 @@ switch(process.env.npm_lifecycle_event) {
         'production'
       ),
       parts.extractSCSStoCSS(
-        /(node_modules|bower_components|vendor)/,
+        [/(node_modules|bower_components|vendors)/, path.resolve(__dirname, "app/scss/vendors"), path.resolve(__dirname, "app/vendors")],
+        "include"
+      ),
+      parts.SCSStoCSSModule(
+        [/node_modules/, path.resolve(__dirname, "app/scss/vendors"), path.resolve(__dirname, "app/vendors")],
+        "exclude",
         [
           path.resolve(__dirname, "node_modules/compass-mixins/lib"),
           path.resolve(__dirname, "app/vendors/materialize/sass")
         ],
+        false,
+        [path.resolve(__dirname, "app/scss/main.scss")],
         false
       ),
       parts.extractBundle({
         name: 'vendor',
         entries: ['react']
       }),
-      parts.eslint(/(node_modules|bower_components|vendors)/),
+      // parts.eslint([/(node_modules|bower_components|vendors)/], "exclude"),
       parts.sassLint(),
-      parts.uglify()
+      parts.optimize()
     );
     break;
   case "build:dev":
@@ -172,7 +179,8 @@ switch(process.env.npm_lifecycle_event) {
         devtool: 'inline-source-map'
       },
       parts.extractSCSStoCSS(
-        /(node_modules|bower_components|vendor)/,
+        [/(node_modules|bower_components|vendor)/],
+        "exclude",
         [
           path.resolve(__dirname, "node_modules/compass-mixins/lib"),
           path.resolve(__dirname, "app/vendors/materialize/sass")
@@ -187,12 +195,19 @@ switch(process.env.npm_lifecycle_event) {
       {
         devtool: 'inline-source-map'
       },
-      parts.inlineSCSStoCSS(
-        /(node_modules|bower_components|vendor)/,
+      parts.extractSCSStoCSS(
+        [/(node_modules|bower_components|vendors)/, path.resolve(__dirname, "app/scss/vendors"), path.resolve(__dirname, "app/vendors")],
+        "include"
+      ),
+      parts.SCSStoCSSModule(
+        [/node_modules/, path.resolve(__dirname, "app/scss/vendors"), path.resolve(__dirname, "app/vendors")],
+        "exclude",
         [
           path.resolve(__dirname, "node_modules/compass-mixins/lib"),
           path.resolve(__dirname, "app/vendors/materialize/sass")
         ],
+        false,
+        [path.resolve(__dirname, "app/scss/main.scss")],
         true
       ),
       parts.devServer({

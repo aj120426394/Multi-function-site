@@ -2,22 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import createHistory from 'history/createBrowserHistory'
 import {Router, Route, IndexRedirect, useRouterHistory, browserHistory} from 'react-router';
-import App, {NotFound} from './components/app';
+import App from './container/App';
 
 import './scss/main.scss';
+import './vendors/materialize/sass/materialize.scss';
 import './vendors/materialize/js/bin/materialize';
 
-// Import each of the images in the images folder.
-const requireAll = (r) => {
-  r.keys().forEach(r)
-};
-requireAll(
-  require.context(
-    "./assets/images",
-    true,
-    /.(jpg|JPG|png)/
-  )
-);
 
 
 function getBasePathForRoute() {
