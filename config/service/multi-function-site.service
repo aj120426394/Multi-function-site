@@ -1,0 +1,15 @@
+[Unit]
+Description=Job that runs the multi function site
+
+[Service]
+#ExecStart=/usr/bin/node /app/multi-function-site/server.js
+ExecStart=/app/multi-function-site/bin/start.sh
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=multi-function-site
+
+
+[Install]
+WantedBy=multi-user.target
