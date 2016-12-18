@@ -57,7 +57,7 @@ const common = {
   },
   output: {
     path: path.join(__dirname, 'dist'),
-    publicPath: '/test/',
+    publicPath: '/mfs/',
     filename: '[name].[hash].js',
     chunkFilename: '[name].[chunkhash:8].js'
   },

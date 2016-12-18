@@ -37,7 +37,7 @@ class Weather extends Component {
   getRadarImages() {
     $.ajax({
       type: 'GET',
-      url: `http://jafoteng.co/api/weather-images`,
+      url: `/api/mfs/weather-images`,
       dataType: 'json',
       success: (res) => {
         if (res.status === 0) {

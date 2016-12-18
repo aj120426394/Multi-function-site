@@ -8,7 +8,9 @@
     "start": "node server.js",
     "dev": "webpack-dev-server --config webpack.config.babel.js --progress --colors",
     "build:prod": "webpack",
-    "build:dev": "webpack"
+    "build:dev": "webpack",
+    "deploy": "cp -r /app/source/multi-function-site/dist/ /app/public/mfs",
+    "clean": "rm -r /app/public/mfs"
   },
   "author": "Jafo Teng",
   "license": "ISC",
